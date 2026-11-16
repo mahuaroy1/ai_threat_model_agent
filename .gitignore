@@ -9,3 +9,4 @@ examples/output/
 .tmp/
 .ai-threat-model-cache/
 *.aitmcache
+temp/
