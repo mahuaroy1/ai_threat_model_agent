@@ -1,0 +1,5 @@
+fastapi==0.115.0
+langchain>=0.3
+langchain-community
+langchain-ollama
+langgraph

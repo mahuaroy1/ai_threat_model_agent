@@ -1,0 +1,1033 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ai-threat-model",
+          "version": "0.1.0",
+          "rules": [
+            {
+              "id": "AITM-AUTH-001",
+              "name": "LlmEntryPointHasNoDetectedAuthentication",
+              "shortDescription": {
+                "text": "LLM entry point has no detected authentication"
+              },
+              "help": {
+                "text": "Require authentication and authorization on the endpoint, and add rate limits and usage quotas to protect model spend and connected tools."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM10 Unbounded Consumption",
+                  "ASI03"
+                ],
+                "security-severity": "5.5"
+              }
+            },
+            {
+              "id": "AITM-DATA-001",
+              "name": "HardCodedSecret",
+              "shortDescription": {
+                "text": "Hard-coded secret"
+              },
+              "help": {
+                "text": "Revoke and rotate the credential, remove it from source and history, and load it from a secret manager or untracked environment configuration."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM02 Sensitive Information Disclosure",
+                  "ASI03"
+                ],
+                "security-severity": "8.0"
+              }
+            },
+            {
+              "id": "AITM-DATA-002",
+              "name": "SecretOrPersonalDataSentToAModel",
+              "shortDescription": {
+                "text": "Secret or personal data sent to a model"
+              },
+              "help": {
+                "text": "Minimize and redact data before prompting. Confirm the provider's retention terms and keep credentials out of prompts entirely."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM02 Sensitive Information Disclosure"
+                ],
+                "security-severity": "5.5"
+              }
+            },
+            {
+              "id": "AITM-DATA-003",
+              "name": "SensitiveDataWrittenToLogsOrDebugOutput",
+              "shortDescription": {
+                "text": "Sensitive data written to logs or debug output"
+              },
+              "help": {
+                "text": "Disable verbose/debug modes in production and redact secrets and personal data before logging prompts, responses, or tool arguments."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM02 Sensitive Information Disclosure"
+                ],
+                "security-severity": "3.0"
+              }
+            },
+            {
+              "id": "AITM-DATA-004",
+              "name": "PromptsAndOutputsExportedToAThirdPartyTracingService",
+              "shortDescription": {
+                "text": "Prompts and outputs exported to a third-party tracing service"
+              },
+              "help": {
+                "text": "Confirm tracing is intended for this environment, mask inputs/outputs containing personal data, and review the vendor's retention policy."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM02 Sensitive Information Disclosure"
+                ],
+                "security-severity": "3.0"
+              }
+            },
+            {
+              "id": "AITM-DATA-005",
+              "name": "CredentialEmbeddedInASystemPrompt",
+              "shortDescription": {
+                "text": "Credential embedded in a system prompt"
+              },
+              "help": {
+                "text": "Assume system prompts can be extracted. Remove credentials and sensitive rules from prompts and enforce authorization outside the model."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM07 System Prompt Leakage",
+                  "ASI03"
+                ],
+                "security-severity": "5.5"
+              }
+            },
+            {
+              "id": "AITM-ID-001",
+              "name": "ToolTakesAnObjectOrIdentityReferenceFromTheModelConfusedDeputy",
+              "shortDescription": {
+                "text": "Tool takes an object or identity reference from the model (confused deputy)"
+              },
+              "help": {
+                "text": "Inject the caller's identity into the tool (InjectedToolArg, InjectedState, or the RunnableConfig) and authorize every object access against it; never trust IDs chosen by the model."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM06 Excessive Agency",
+                  "ASI03",
+                  "ASI02"
+                ],
+                "security-severity": "5.5"
+              }
+            },
+            {
+              "id": "AITM-OUT-001",
+              "name": "ModelOutputReachesADangerousSink",
+              "shortDescription": {
+                "text": "Model output reaches a dangerous sink"
+              },
+              "help": {
+                "text": "Treat model output as untrusted input. Parse it into a validated structure and never pass it to eval, shells, raw SQL, file paths, or URLs."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM05 Improper Output Handling",
+                  "ASI05",
+                  "ASI02"
+                ],
+                "security-severity": "9.5"
+              }
+            },
+            {
+              "id": "AITM-OUT-002",
+              "name": "ModelOutputRenderedAsTrustedHtmlOrTemplate",
+              "shortDescription": {
+                "text": "Model output rendered as trusted HTML or template"
+              },
+              "help": {
+                "text": "HTML-escape model output, render it as text or sanitized Markdown, and never mark it as safe markup."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM05 Improper Output Handling",
+                  "ASI09"
+                ],
+                "security-severity": "8.0"
+              }
+            },
+            {
+              "id": "AITM-PI-001",
+              "name": "UntrustedInputConcatenatedIntoAPrompt",
+              "shortDescription": {
+                "text": "Untrusted input concatenated into a prompt"
+              },
+              "help": {
+                "text": "Pass user input as a separate template variable or human message; never splice it into instructions. Delimit untrusted text and validate its length and format."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM01 Prompt Injection",
+                  "ASI01"
+                ],
+                "security-severity": "5.5"
+              }
+            },
+            {
+              "id": "AITM-PI-003",
+              "name": "IndirectPromptInjectionExternalContentReachesAnAgentWithPrivilegedTools",
+              "shortDescription": {
+                "text": "Indirect prompt injection: external content reaches an agent with privileged tools"
+              },
+              "help": {
+                "text": "Treat retrieved and fetched content as data: isolate it from tool-calling agents, restrict tools to least privilege, and require human approval for side effects."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM01 Prompt Injection",
+                  "ASI01",
+                  "ASI06"
+                ],
+                "security-severity": "8.0"
+              }
+            },
+            {
+              "id": "AITM-SUP-001",
+              "name": "AiFrameworkDependencyIsNotPinned",
+              "shortDescription": {
+                "text": "AI framework dependency is not pinned"
+              },
+              "help": {
+                "text": "Pin exact versions (or use a lock file with hashes) for LangChain, LangGraph, and model SDK packages, and review updates before upgrading."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM03 Supply Chain",
+                  "ASI04"
+                ],
+                "security-severity": "3.0"
+              }
+            },
+            {
+              "id": "AITM-TOOL-001",
+              "name": "HighRiskBuiltInToolExposedToTheModel",
+              "shortDescription": {
+                "text": "High-risk built-in tool exposed to the model"
+              },
+              "help": {
+                "text": "Remove the tool or replace it with a narrowly scoped tool that validates arguments, runs in a sandbox, and requires human approval."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM06 Excessive Agency",
+                  "ASI02",
+                  "ASI05"
+                ],
+                "security-severity": "9.5"
+              }
+            },
+            {
+              "id": "AITM-TOOL-003",
+              "name": "ModelControlledToolArgumentReachesADangerousSink",
+              "shortDescription": {
+                "text": "Model-controlled tool argument reaches a dangerous sink"
+              },
+              "help": {
+                "text": "Validate tool arguments against a strict schema and allow-list. Use parameterized queries, argument arrays without a shell, and path/URL allow-lists."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM06 Excessive Agency",
+                  "ASI02",
+                  "ASI05"
+                ],
+                "security-severity": "9.5"
+              }
+            },
+            {
+              "id": "AITM-TOOL-005",
+              "name": "NoHumanApprovalBeforeSideEffectingToolCalls",
+              "shortDescription": {
+                "text": "No human approval before side-effecting tool calls"
+              },
+              "help": {
+                "text": "Use LangGraph interrupts (interrupt_before / interrupt()) or human-in-the-loop middleware so a person approves destructive or external actions."
+              },
+              "properties": {
+                "tags": [
+                  "security",
+                  "ai",
+                  "LLM06 Excessive Agency",
+                  "ASI02",
+                  "ASI09"
+                ],
+                "security-severity": "5.5"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "AITM-TOOL-003",
+          "ruleIndex": 13,
+          "level": "error",
+          "message": {
+            "text": "Model-controlled tool argument reaches a dangerous sink: Tool `network_check` passes a model-controlled argument to `subprocess.run` (command execution). A prompt-injected model chooses this value. The data passes through `run_network_check()` parameter `host` and reaches the sink at app/system_utils.py:12."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 51
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 0,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/system_utils.py"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            },
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 49
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "critical",
+            "confidence": "high",
+            "security-severity": "9.5",
+            "owasp-agentic": [
+              "ASI02",
+              "ASI05"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-TOOL-001",
+          "ruleIndex": 12,
+          "level": "error",
+          "message": {
+            "text": "High-risk built-in tool exposed to the model: `ShellTool` gives the model arbitrary shell command execution."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 56
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "critical",
+            "confidence": "high",
+            "security-severity": "9.5",
+            "owasp-agentic": [
+              "ASI02",
+              "ASI05"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-001",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Hard-coded secret: `SUPPORT_API_KEY` is set to a literal credential (acme\u2026[REDACTED])."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 20
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "high",
+            "confidence": "high",
+            "security-severity": "8.0",
+            "owasp-agentic": [
+              "ASI03"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-TOOL-003",
+          "ruleIndex": 13,
+          "level": "error",
+          "message": {
+            "text": "Model-controlled tool argument reaches a dangerous sink: Tool `lookup_customer` passes a model-controlled argument to `connection.execute` (SQL execution). A prompt-injected model chooses this value."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 44
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 0,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 40
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "confidence": "high",
+            "security-severity": "8.0",
+            "owasp-agentic": [
+              "ASI02",
+              "ASI05"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-PI-003",
+          "ruleIndex": 10,
+          "level": "error",
+          "message": {
+            "text": "Indirect prompt injection: external content reaches an agent with privileged tools: Untrusted external content (`WebBaseLoader`) can reach agent context while the agent can call side-effecting tools (`ShellTool`, `lookup_customer`, `network_check`). Instructions hidden in fetched content can trigger those tools."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 57
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 0,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 35
+                }
+              }
+            },
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 40
+                }
+              }
+            },
+            {
+              "id": 2,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 49
+                }
+              }
+            },
+            {
+              "id": 3,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 56
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "high",
+            "confidence": "medium",
+            "security-severity": "8.0",
+            "owasp-agentic": [
+              "ASI01",
+              "ASI06"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-OUT-002",
+          "ruleIndex": 8,
+          "level": "error",
+          "message": {
+            "text": "Model output rendered as trusted HTML or template: Model output is rendered as trusted markup via `fastapi.responses.HTMLResponse` (XSS / template injection)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 28
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "high",
+            "confidence": "medium",
+            "security-severity": "8.0",
+            "owasp-agentic": [
+              "ASI09"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-OUT-001",
+          "ruleIndex": 7,
+          "level": "error",
+          "message": {
+            "text": "Model output reaches a dangerous sink: Model output flows into `connection.execute` (SQL execution) in `run_report`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 35
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "high",
+            "confidence": "medium",
+            "security-severity": "8.0",
+            "owasp-agentic": [
+              "ASI05",
+              "ASI02"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-001",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Hard-coded secret: `DATABASE_PASSWORD` holds a literal credential (acme\u2026[REDACTED])."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/settings.yaml"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "high",
+            "confidence": "medium",
+            "security-severity": "8.0",
+            "owasp-agentic": [
+              "ASI03"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-005",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "Credential embedded in a system prompt: The system prompt text appears to contain a credential."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 27
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI03"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-ID-001",
+          "ruleIndex": 6,
+          "level": "warning",
+          "message": {
+            "text": "Tool takes an object or identity reference from the model (confused deputy): Tool `lookup_customer` lets the model choose `customer_id` and receives no caller identity (no InjectedToolArg/InjectedState/config). A prompt-injected model can act on other users' records with the agent's privileges (IDOR / confused deputy)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 40
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI03",
+              "ASI02"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-TOOL-005",
+          "ruleIndex": 14,
+          "level": "warning",
+          "message": {
+            "text": "No human approval before side-effecting tool calls: Side-effecting tools (`ShellTool`, `lookup_customer`, `network_check`) run without any detected human approval step (no LangGraph interrupt, interrupt_before/after, or human-in-the-loop middleware)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 57
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 0,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 40
+                }
+              }
+            },
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 49
+                }
+              }
+            },
+            {
+              "id": 2,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 56
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI02",
+              "ASI09"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-AUTH-001",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "LLM entry point has no detected authentication: `POST /chat` exposes LLM functionality without detected authentication; anyone who can reach it can spend model quota and drive connected tools."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 23
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "low",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI03"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-003",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Sensitive data written to logs or debug output: Personal data is written to logs via `logger.info`."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 24
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": []
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-002",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Secret or personal data sent to a model: Personal data is sent to the model via .invoke()."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": []
+          }
+        },
+        {
+          "ruleId": "AITM-PI-001",
+          "ruleIndex": 9,
+          "level": "warning",
+          "message": {
+            "text": "Untrusted input concatenated into a prompt: User input is formatted directly into .invoke(); it is not delimited from instructions and braces in the input can inject template variables."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 26
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI01"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-AUTH-001",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "LLM entry point has no detected authentication: `GET /reports` exposes LLM functionality without detected authentication; anyone who can reach it can spend model quota and drive connected tools."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 32
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "low",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI03"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-PI-001",
+          "ruleIndex": 9,
+          "level": "warning",
+          "message": {
+            "text": "Untrusted input concatenated into a prompt: User input is formatted directly into .invoke(); it is not delimited from instructions and braces in the input can inject template variables."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/main.py"
+                },
+                "region": {
+                  "startLine": 33
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "medium",
+            "confidence": "medium",
+            "security-severity": "5.5",
+            "owasp-agentic": [
+              "ASI01"
+            ]
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-003",
+          "ruleIndex": 3,
+          "level": "note",
+          "message": {
+            "text": "Sensitive data written to logs or debug output: `set_debug(True)` prints full prompts, tool arguments, and responses to stdout/logs."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "app/agent.py"
+                },
+                "region": {
+                  "startLine": 22
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "low",
+            "confidence": "high",
+            "security-severity": "3.0",
+            "owasp-agentic": []
+          }
+        },
+        {
+          "ruleId": "AITM-DATA-004",
+          "ruleIndex": 4,
+          "level": "note",
+          "message": {
+            "text": "Prompts and outputs exported to a third-party tracing service: `LANGSMITH_TRACING=true` sends prompts, tool arguments, and model outputs to LangSmith."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "config/settings.yaml"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "relatedLocations": [],
+          "properties": {
+            "severity": "low",
+            "confidence": "high",
+            "security-severity": "3.0",
+            "owasp-agentic": []
+          }
+        },
+        {
+          "ruleId": "AITM-SUP-001",
+          "ruleIndex": 11,
+          "level": "note",
+          "message": {
+            "text": "AI framework dependency is not pinned: Unpinned AI dependencies: langchain, langchain-community, langchain-ollama, langgraph."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt"
+                },
+                "region": {
+                  "startLine": 2
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 0,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            },
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt"
+                },
+                "region": {
+                  "startLine": 4
+                }
+              }
+            },
+            {
+              "id": 2,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "requirements.txt"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "properties": {
+            "severity": "low",
+            "confidence": "medium",
+            "security-severity": "3.0",
+            "owasp-agentic": [
+              "ASI04"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

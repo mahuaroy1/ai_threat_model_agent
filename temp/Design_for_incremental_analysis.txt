@@ -1,0 +1,131 @@
+They fall into two families. **CodeQL** and **Joern** take a full snapshot of the code, store it as a database, and query it many times. **Infer**, **Glean** and **stack graphs** are built for incremental reuse, and they're the closest fit to your design. This answer is from memory; I didn't look anything up, and I've flagged the parts I'm least sure of.
+
+## CodeQL: the code as a relational database
+
+- **Extraction:** a language extractor runs with the build and writes facts as rows. These are TRAP (tuple) files with tables such as `functions`, `calls`, `exprs`, `locations`. A `.dbscheme` file defines the tables, like a SQL schema.
+- **Storage:** the TRAP files are imported into a **CodeQL database** directory, which holds:
+  - the relations in a compact, paged binary format with a shared string pool,
+  - a `src.zip` copy of the source,
+  - metadata.
+- **Queries:** QL is a Datalog-like language compiled to relational algebra.
+  - Results of intermediate predicates are **cached inside the database**, so later queries reuse them.
+  - Query results are saved as `.bqrs` binary files and turned into SARIF.
+- **Reuse across scans:** a database is a snapshot. Reuse mostly happens within one database (many queries, cached predicates), not across code changes. GitHub has more recently added incremental analysis for pull requests, analyzing only changed files on top of a base database. I'm not sure of its current details; check the CodeQL docs.
+- **The part most relevant to you: models-as-data.** Library behavior is written as data rows (`sourceModel`, `sinkModel`, `summaryModel`) such as `input: Argument[0] → output: ReturnValue, kind: taint`. These rows are stored in YAML packs, and some are generated automatically from library code.
+  - This is the same idea as your `FunctionSummary`: summaries are kept as portable, versioned data, separate from the analysis engine.
+
+## Joern: the Code Property Graph (CPG)
+
+- **The graph:** one property graph that merges the syntax tree (AST), control-flow graph (CFG) and dependence graph (PDG/DDG), plus type and call-graph edges. The schema is generated from a definition in the `codeprop​ertygraph` project.
+- **Storage, which has changed over time:**
+  - The original CPG paper (Yamaguchi et al., 2014) stored it in **Neo4j**.
+  - Joern then used **OverflowDB**: an in-memory graph that spills to disk (H2 MVStore), saved as `cpg.bin`.
+  - Joern v4 moved to **flatgraph**: a compact, column-oriented in-memory graph serialized to one compressed binary file. It loads very fast because it is mostly bulk array copies.
+- **Layered overlays:** a language frontend builds the base graph, then passes add layers: control flow, type relations, call graph, data flow. Joern records which layers have been applied, so it can reload the saved CPG and skip work already done. Projects live in a `workspace/` directory.
+- **External semantics:** a "semantics" file describes how data flows through library methods, the same idea as CodeQL's models-as-data.
+- **Data-flow results** are cached per session in memory, not persisted.
+- **Export:** Neo4j, GraphML, GraphSON or DOT, for tools that want a graph database.
+
+## Systems designed for incremental reuse (closest to your design)
+
+| System | How it stores data | Why it matters to you |
+|---|---|---|
+| **Infer** (Meta) | **One summary per procedure, stored in SQLite** (`infer-out/results.db`) | Same compositional model as your `FunctionSummary`. Changed procedures are re-analyzed, then their callers, while other summaries are loaded from SQLite. |
+| **Glean** (Meta) | Typed facts in **RocksDB**, queried with the Angle language | **Stacked databases**: an incremental layer sits on top of a base database and hides the facts of changed files. Reads use the overlay first, then the base. |
+| **Stack graphs** (GitHub) | **Per-file partial graphs in SQLite** | Each file is indexed **independently**. Partial paths are joined across files at query time, so only changed files are re-indexed. This powers precise code navigation on GitHub. |
+| **Kythe** (Google) | A graph of nodes and edges stored as key-value entries (LevelDB, or serving tables) | Separates indexing (per compilation unit) from serving (precomputed cross-references). |
+| **Pysa / Pyre** (Meta) | Taint models in `.pysa` files plus cached type information | A Python taint analyzer; its source, sink and propagation models are the same idea as your catalog. |
+
+## Patterns they share
+
+1. **Separate extraction from analysis.** Each file is turned into facts on its own (syntax tree, local flows, imports, calls), stored in a form you can query, and never re-parsed if its hash is unchanged. CodeQL TRAP files, Kythe entries and stack-graph partial graphs all work this way.
+2. **Overlays on a base.** The base facts are immutable, and derived layers (call graph, data flow, summaries) can be rebuilt independently. Joern's overlays and Glean's stacked databases both do this.
+3. **Summaries as data.** Library and function behavior is stored as rows; both CodeQL's models-as-data and Infer's specs do this. Your summaries could also be **published for third-party libraries**, such as LangChain tools, instead of relying only on the hard-coded catalog.
+4. **Fast-loading storage:**
+   - column-oriented or memory-mapped binary files for whole-graph loads (flatgraph, CodeQL relations),
+   - SQLite or RocksDB for lookups and partial reloads (Infer, Glean, stack graphs).
+5. **Versioned schemas:** a schema change invalidates the old data.
+
+## What this suggests for your agent
+
+- **Short term:** an Infer-style setup. Keep **one SQLite row per function summary**, plus `files`, `deps` and `findings` tables, and load summaries only when a call needs them.
+- **Medium term:** the stack-graphs and Glean pattern.
+  - Store **per-file facts** that don't depend on other files: imports, call sites, which parameter reaches which risky operation, and the tool, model and entry-point inventory.
+  - Run the cross-file solver over those facts without re-parsing source.
+  - Treat the solved summaries and findings as an overlay keyed by content hashes.
+- **Rule packs:** move `catalog.py`'s sources, sinks and propagators into versioned **models-as-data** files (YAML or rows in the database), like CodeQL and Pysa. Rules then update without code changes and can be part of the cache key.
+- **If you need graph queries:** Joern's approach (a compact binary graph, exported to Neo4j on demand) is a good model. Use a graph database for exploring and visualizing data flows, not as the hot path for incremental scans; SQLite or RocksDB is faster for lookups by key.
+
+
+The biggest wins come from what you keep and recompute, more than from the storage format. In the current design, two things cost the most:
+
+- **Memory:** every file's analyzer and full syntax tree (`ast`) stay in memory at once.
+- **Time:** `solve_summaries` re-walks every function's syntax tree in each round, even when nothing that function calls has changed.
+
+These are ideas only; I haven't benchmarked any of them.
+
+## 1. Keep compact facts, not syntax trees (biggest memory win)
+
+- Parse a file, pull out a small **facts record**, then drop the syntax tree right away. The record holds:
+  - imports,
+  - function definitions and their parameters,
+  - call sites (callee, which argument goes to which parameter),
+  - local flows (parameter → risky operation, parameter → return value, source → risky operation),
+  - the inventory (tools, models, entry points).
+- The cross-file solver then works on these facts, not on syntax trees. Python's syntax-tree objects are large (each node carries attributes and position fields), so a facts record should be many times smaller.
+- Store facts **per file, keyed by content hash**. An unchanged file is never parsed again.
+
+## 2. Compact in-memory representation
+
+- **Turn repeated strings into integer IDs:** file paths, function keys, risky-operation kinds and callee names each get an integer once.
+- **Store labels as bit flags.** The taint labels (user input, model output, secret, PII, …) and risky-operation kinds are small fixed sets, so each fits in one integer. Merging becomes `a | b`, and checking for a change becomes `new != old`, with no set objects.
+- **Store a function's parameters as bit positions.** "Parameter 2 reaches the shell" becomes a bit in a per-risky-operation mask.
+- **Keep code snippets out of memory:** store only `(file_id, line)` and read the snippet from the source when the report is written.
+- **Use `@dataclass(slots=True, frozen=True)`** for anything kept in memory. Even better, store arrays of records (`array('I')`, packed with `struct`) instead of millions of small objects.
+
+## 3. Faster solving (biggest time win)
+
+- **Process strongly connected groups bottom-up.** Build the call graph and group mutually recursive functions (Tarjan's algorithm). Solve callees before callers. Each function is solved once, except inside recursion cycles, which loop only until they stop changing.
+- **Use a worklist instead of global rounds.** When a summary changes, re-queue only its callers, using a reverse call-graph index.
+- **Stop early when nothing changed.** If a re-analyzed function's summary hashes the same as before, don't re-check its callers. This is the "early cutoff" used by Salsa (behind rust-analyzer) and by Bazel.
+  - For example, editing a comment or the body of a helper without changing which data reaches which risky operation triggers no further work.
+- **Make invalidation finer-grained.** Track dependencies **per function**, not per file. Re-analyze only the callers of the functions whose summaries actually changed.
+
+## 4. Storage that loads fast and uses little memory
+
+| Layer | Choice | Why |
+|---|---|---|
+| Index and per-file metadata | **SQLite** (`WITHOUT ROWID`, integer keys, WAL mode) | Built into Python; reads only the rows you need; works across processes |
+| Facts and summaries | **Fixed-layout binary records in one memory-mapped file** (`mmap` + `struct`/`memoryview`) | Reading data costs no decoding; the OS loads only the pages you touch and shares them between processes; memory stays nearly flat as the cache grows |
+| Optional with installs | **LMDB** (a memory-mapped B-tree with zero-copy reads), with FlatBuffers or Cap'n Proto records | The fastest common option; reads without parsing |
+| Cold or remote storage | **zstd**-compressed blobs | Small to ship to CI. Don't compress the data the scan reads constantly, or decompression costs CPU every time. |
+
+This is the same idea as Joern's flatgraph and CodeQL's paged relations: columns of numbers that load in bulk, not millions of objects.
+
+## 5. Skip unchanged files cheaply
+
+- **Check modification time and size first, like git's index.** Hash only files whose time or size changed.
+- **Use BLAKE2b** (`hashlib.blake2b` is in the standard library) instead of SHA-256; it is generally faster in software. xxhash is faster still but needs an install.
+- **Load only what a changed file needs:** look up the summaries its calls use and touch nothing else.
+- **Store a ready-made project total** of finding and component counts, and update only the rows of changed files.
+
+## 6. Parallel work and bounded memory
+
+- Fact extraction is independent per file, so a `ProcessPoolExecutor` can run it in parallel.
+  - Send back the compact facts (bytes), not syntax trees, so passing data between processes stays cheap.
+- Keep recently used summaries in an **in-memory LRU cache** in front of the memory-mapped file, so memory has a fixed upper bound.
+- **Stream results:** write findings to the report as they are produced, instead of building every list in memory.
+
+## Suggested combination
+
+1. Per-file facts records, keyed by content hash, with the syntax tree discarded after extraction.
+2. Integer IDs and bit flags in memory.
+3. A bottom-up worklist solver with early cutoff.
+4. SQLite for the index plus a memory-mapped record file for facts and summaries, all in the standard library.
+5. A modification-time and size check before hashing, and parallel extraction.
+
+Expected effect, based on reasoning rather than measurement:
+- **Memory** stays close to "summaries for the code you're actually solving" instead of "syntax trees for the whole repository".
+- **Time on a small change** becomes roughly proportional to the edited functions plus the callers whose summaries actually changed.
+
+**Where to start:** measure first. On a large repository, compare parsing time (`ast.parse` plus walking the tree), solver time, and peak memory (`tracemalloc`). Fix whichever dominates; I'd expect it to be parsing and solver rounds, not loading the cache.

@@ -1,0 +1,26 @@
+{
+    // Use the system interpreter directly; the scanner and tests need only the standard library.
+    "python.defaultInterpreterPath": "C:\\Python314\\python.exe",
+    "python.envFile": "${workspaceFolder}/.vscode/.env",
+
+    // Let Pylance resolve `import ai_threat_model` from ./src without installing the package.
+    "python.analysis.extraPaths": ["${workspaceFolder}/src"],
+    "python.analysis.typeCheckingMode": "basic",
+    // The examples import LangChain packages that are intentionally not installed.
+    "python.analysis.exclude": ["examples/**", "threat-model-report/**", "**/__pycache__"],
+
+    // Test Explorer: stdlib unittest (pytest is not required).
+    "python.testing.unittestEnabled": true,
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestArgs": ["-v", "-s", "./tests", "-t", ".", "-p", "test_*.py"],
+    "python.testing.cwd": "${workspaceFolder}",
+
+    // The incremental-analysis cache is JSON; open it with JSON highlighting, folding, and outline.
+    "files.associations": {
+        "*.aitmcache": "json"
+    },
+
+    "files.exclude": {
+        "**/__pycache__": true
+    }
+}

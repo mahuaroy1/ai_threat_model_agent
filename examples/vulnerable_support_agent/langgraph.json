@@ -1,0 +1,6 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "support": "./app/agent.py:build_agent"
+  }
+}

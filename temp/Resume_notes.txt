@@ -1,0 +1,13 @@
+Here are some options:
+
+**Short (one or two lines):**
+> Built an AI Threat Model Agent in Python that statically analyzes LangChain/LangGraph apps. It maps entry points, model calls, tools, memory, MCP servers and trust boundaries, then produces file- and line-level threat models mapped to the OWASP Top 10 for LLM and Agentic Applications (ASI01–ASI10).
+
+**Bullet version:**
+- Designed and built an AI threat-modeling tool for LangChain/LangGraph apps. It uses AST-based interprocedural taint analysis to find prompt injection, unsafe tool use, code execution, memory poisoning and sensitive-data exposure, without running the scanned code.
+- Wrote 26 detection rules mapped to the OWASP LLM and Agentic Top 10, plus a 12-item agent controls checklist. The tool outputs Markdown (with Mermaid diagrams), JSON and SARIF, with an incremental cache for faster re-scans.
+- Added an optional AI-written summary from a local Ollama Qwen model. Secrets are redacted and the prompt is hardened against injection. Backed by 152 unit tests.
+
+**Keywords:** Python, LangChain, LangGraph, Ollama, static analysis, taint analysis, threat modeling, OWASP, MCP, SARIF, AI security.
+
+If you used it on a real codebase, add a concrete result, such as the number of apps scanned or issues found. That makes the bullet much stronger.

@@ -1,0 +1,4 @@
+# Acme support agent settings (INTENTIONALLY VULNERABLE example)
+LANGSMITH_TRACING: "true"
+LANGSMITH_PROJECT: acme-support
+DATABASE_PASSWORD: "acme-db-pass-2024"

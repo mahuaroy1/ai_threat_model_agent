@@ -1,0 +1,908 @@
+{
+  "project_root": "examples/vulnerable_support_agent",
+  "generated_at": "2026-11-13T21:57:23+00:00",
+  "scanned_files": [
+    "langgraph.json",
+    "requirements.txt",
+    "app/__init__.py",
+    "app/agent.py",
+    "app/main.py",
+    "app/system_utils.py",
+    "config/settings.yaml"
+  ],
+  "frameworks": [
+    "LangChain",
+    "LangGraph"
+  ],
+  "components": [
+    {
+      "kind": "agent",
+      "name": "create_react_agent",
+      "location": {
+        "file": "app/agent.py",
+        "line": 57,
+        "snippet": "return create_react_agent(llm, tools, prompt=SYSTEM_PROMPT)"
+      },
+      "qualified_name": "langgraph.prebuilt.create_react_agent",
+      "attributes": {
+        "factory": "create_react_agent",
+        "tools": "tools"
+      },
+      "id": "agent:create_react_agent@app/agent.py:57"
+    },
+    {
+      "kind": "entry_point",
+      "name": "POST /chat",
+      "location": {
+        "file": "app/main.py",
+        "line": 23,
+        "snippet": "def chat(body: ChatRequest) -> HTMLResponse:"
+      },
+      "qualified_name": "chat",
+      "attributes": {
+        "interface": "HTTP",
+        "auth": "not detected",
+        "handler": "chat"
+      },
+      "id": "entry_point:POST /chat@app/main.py:23"
+    },
+    {
+      "kind": "entry_point",
+      "name": "GET /reports",
+      "location": {
+        "file": "app/main.py",
+        "line": 32,
+        "snippet": "def run_report(question: str) -> dict:"
+      },
+      "qualified_name": "run_report",
+      "attributes": {
+        "interface": "HTTP",
+        "auth": "not detected",
+        "handler": "run_report"
+      },
+      "id": "entry_point:GET /reports@app/main.py:32"
+    },
+    {
+      "kind": "entry_point",
+      "name": "LangGraph API graph 'support'",
+      "location": {
+        "file": "langgraph.json",
+        "line": 4,
+        "snippet": "\"support\": \"./app/agent.py:build_agent\""
+      },
+      "qualified_name": "./app/agent.py:build_agent",
+      "attributes": {
+        "interface": "HTTP (LangGraph Platform)",
+        "auth": "platform default",
+        "target": "./app/agent.py:build_agent"
+      },
+      "id": "entry_point:LangGraph API graph 'support'@langgraph.json:4"
+    },
+    {
+      "kind": "model",
+      "name": "qwen2.5-coder:7b",
+      "location": {
+        "file": "app/agent.py",
+        "line": 24,
+        "snippet": "llm = ChatOllama(model=\"qwen2.5-coder:7b\", base_url=\"http://127.0.0.1:11434\", temperature=0)"
+      },
+      "qualified_name": "langchain_ollama.ChatOllama",
+      "attributes": {
+        "provider": "ollama",
+        "local": "yes",
+        "base_url": "http://127.0.0.1:11434"
+      },
+      "id": "model:qwen2.5-coder:7b@app/agent.py:24"
+    },
+    {
+      "kind": "observability",
+      "name": "LangSmith tracing",
+      "location": {
+        "file": "config/settings.yaml",
+        "line": 2,
+        "snippet": "LANGSMITH_TRACING: \"true\""
+      },
+      "qualified_name": "LANGSMITH_TRACING",
+      "attributes": {
+        "vendor": "LangSmith"
+      },
+      "id": "observability:LangSmith tracing@config/settings.yaml:2"
+    },
+    {
+      "kind": "retrieval",
+      "name": "WebBaseLoader",
+      "location": {
+        "file": "app/agent.py",
+        "line": 35,
+        "snippet": "documents = WebBaseLoader(url).load()  # AITM-PI-003: untrusted web content enters the agent context"
+      },
+      "qualified_name": "langchain_community.document_loaders.WebBaseLoader",
+      "attributes": {
+        "trust": "untrusted external content"
+      },
+      "id": "retrieval:WebBaseLoader@app/agent.py:35"
+    },
+    {
+      "kind": "tool",
+      "name": "fetch_kb_article",
+      "location": {
+        "file": "app/agent.py",
+        "line": 33,
+        "snippet": "def fetch_kb_article(url: str) -> str:"
+      },
+      "qualified_name": "langchain_core.tools.tool",
+      "attributes": {
+        "source": "@tool",
+        "function": "fetch_kb_article"
+      },
+      "id": "tool:fetch_kb_article@app/agent.py:33"
+    },
+    {
+      "kind": "tool",
+      "name": "lookup_customer",
+      "location": {
+        "file": "app/agent.py",
+        "line": 40,
+        "snippet": "def lookup_customer(customer_id: str) -> str:"
+      },
+      "qualified_name": "langchain_core.tools.tool",
+      "attributes": {
+        "source": "@tool",
+        "function": "lookup_customer",
+        "capabilities": "SQL execution"
+      },
+      "id": "tool:lookup_customer@app/agent.py:40"
+    },
+    {
+      "kind": "tool",
+      "name": "network_check",
+      "location": {
+        "file": "app/agent.py",
+        "line": 49,
+        "snippet": "def network_check(host: str) -> str:"
+      },
+      "qualified_name": "langchain_core.tools.tool",
+      "attributes": {
+        "source": "@tool",
+        "function": "network_check",
+        "capabilities": "command execution"
+      },
+      "id": "tool:network_check@app/agent.py:49"
+    },
+    {
+      "kind": "tool",
+      "name": "ShellTool",
+      "location": {
+        "file": "app/agent.py",
+        "line": 56,
+        "snippet": "tools = [fetch_kb_article, lookup_customer, network_check, ShellTool()]  # AITM-TOOL-001: ShellTool"
+      },
+      "qualified_name": "langchain_community.tools.ShellTool",
+      "attributes": {
+        "capabilities": "arbitrary shell command execution",
+        "dangerous": "yes"
+      },
+      "id": "tool:ShellTool@app/agent.py:56"
+    }
+  ],
+  "findings": [
+    {
+      "rule_id": "AITM-TOOL-003",
+      "title": "Model-controlled tool argument reaches a dangerous sink",
+      "severity": "critical",
+      "category": "LLM06 Excessive Agency",
+      "description": "Tool `network_check` passes a model-controlled argument to `subprocess.run` (command execution). A prompt-injected model chooses this value. The data passes through `run_network_check()` parameter `host` and reaches the sink at app/system_utils.py:12.",
+      "recommendation": "Validate tool arguments against a strict schema and allow-list. Use parameterized queries, argument arrays without a shell, and path/URL allow-lists.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 51,
+        "snippet": "return run_network_check(host)  # AITM-TOOL-003 (interprocedural): reaches a shell in system_utils.py"
+      },
+      "related": [
+        {
+          "file": "app/system_utils.py",
+          "line": 12,
+          "snippet": "completed = subprocess.run(f\"ping -c 1 {host}\", shell=True, capture_output=True, text=True, timeout=10)"
+        },
+        {
+          "file": "app/agent.py",
+          "line": 49,
+          "snippet": "def network_check(host: str) -> str:"
+        }
+      ],
+      "confidence": "high",
+      "owasp_agentic": [
+        "ASI02",
+        "ASI05"
+      ]
+    },
+    {
+      "rule_id": "AITM-TOOL-001",
+      "title": "High-risk built-in tool exposed to the model",
+      "severity": "critical",
+      "category": "LLM06 Excessive Agency",
+      "description": "`ShellTool` gives the model arbitrary shell command execution.",
+      "recommendation": "Remove the tool or replace it with a narrowly scoped tool that validates arguments, runs in a sandbox, and requires human approval.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 56,
+        "snippet": "tools = [fetch_kb_article, lookup_customer, network_check, ShellTool()]  # AITM-TOOL-001: ShellTool"
+      },
+      "related": [],
+      "confidence": "high",
+      "owasp_agentic": [
+        "ASI02",
+        "ASI05"
+      ]
+    },
+    {
+      "rule_id": "AITM-DATA-001",
+      "title": "Hard-coded secret",
+      "severity": "high",
+      "category": "LLM02 Sensitive Information Disclosure",
+      "description": "`SUPPORT_API_KEY` is set to a literal credential (acme\u2026[REDACTED]).",
+      "recommendation": "Revoke and rotate the credential, remove it from source and history, and load it from a secret manager or untracked environment configuration.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 20,
+        "snippet": "SUPPORT_API_KEY = \"acme\u2026[REDACTED]\"  # AITM-DATA-001: hard-coded credential"
+      },
+      "related": [],
+      "confidence": "high",
+      "owasp_agentic": [
+        "ASI03"
+      ]
+    },
+    {
+      "rule_id": "AITM-TOOL-003",
+      "title": "Model-controlled tool argument reaches a dangerous sink",
+      "severity": "high",
+      "category": "LLM06 Excessive Agency",
+      "description": "Tool `lookup_customer` passes a model-controlled argument to `connection.execute` (SQL execution). A prompt-injected model chooses this value.",
+      "recommendation": "Validate tool arguments against a strict schema and allow-list. Use parameterized queries, argument arrays without a shell, and path/URL allow-lists.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 44,
+        "snippet": "row = connection.execute(f\"SELECT name, plan FROM customers WHERE id = '{customer_id}'\").fetchone()"
+      },
+      "related": [
+        {
+          "file": "app/agent.py",
+          "line": 40,
+          "snippet": "def lookup_customer(customer_id: str) -> str:"
+        }
+      ],
+      "confidence": "high",
+      "owasp_agentic": [
+        "ASI02",
+        "ASI05"
+      ]
+    },
+    {
+      "rule_id": "AITM-PI-003",
+      "title": "Indirect prompt injection: external content reaches an agent with privileged tools",
+      "severity": "high",
+      "category": "LLM01 Prompt Injection",
+      "description": "Untrusted external content (`WebBaseLoader`) can reach agent context while the agent can call side-effecting tools (`ShellTool`, `lookup_customer`, `network_check`). Instructions hidden in fetched content can trigger those tools.",
+      "recommendation": "Treat retrieved and fetched content as data: isolate it from tool-calling agents, restrict tools to least privilege, and require human approval for side effects.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 57,
+        "snippet": "return create_react_agent(llm, tools, prompt=SYSTEM_PROMPT)"
+      },
+      "related": [
+        {
+          "file": "app/agent.py",
+          "line": 35,
+          "snippet": "documents = WebBaseLoader(url).load()  # AITM-PI-003: untrusted web content enters the agent context"
+        },
+        {
+          "file": "app/agent.py",
+          "line": 40,
+          "snippet": "def lookup_customer(customer_id: str) -> str:"
+        },
+        {
+          "file": "app/agent.py",
+          "line": 49,
+          "snippet": "def network_check(host: str) -> str:"
+        },
+        {
+          "file": "app/agent.py",
+          "line": 56,
+          "snippet": "tools = [fetch_kb_article, lookup_customer, network_check, ShellTool()]  # AITM-TOOL-001: ShellTool"
+        }
+      ],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI01",
+        "ASI06"
+      ]
+    },
+    {
+      "rule_id": "AITM-OUT-002",
+      "title": "Model output rendered as trusted HTML or template",
+      "severity": "high",
+      "category": "LLM05 Improper Output Handling",
+      "description": "Model output is rendered as trusted markup via `fastapi.responses.HTMLResponse` (XSS / template injection).",
+      "recommendation": "HTML-escape model output, render it as text or sanitized Markdown, and never mark it as safe markup.",
+      "location": {
+        "file": "app/main.py",
+        "line": 28,
+        "snippet": "return HTMLResponse(f\"<div class='answer'>{answer}</div>\")  # AITM-OUT-002: model output rendered as HTML"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI09"
+      ]
+    },
+    {
+      "rule_id": "AITM-OUT-001",
+      "title": "Model output reaches a dangerous sink",
+      "severity": "high",
+      "category": "LLM05 Improper Output Handling",
+      "description": "Model output flows into `connection.execute` (SQL execution) in `run_report`.",
+      "recommendation": "Treat model output as untrusted input. Parse it into a validated structure and never pass it to eval, shells, raw SQL, file paths, or URLs.",
+      "location": {
+        "file": "app/main.py",
+        "line": 35,
+        "snippet": "rows = connection.execute(sql).fetchall()  # AITM-OUT-001: model-written SQL executed"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI05",
+        "ASI02"
+      ]
+    },
+    {
+      "rule_id": "AITM-DATA-001",
+      "title": "Hard-coded secret",
+      "severity": "high",
+      "category": "LLM02 Sensitive Information Disclosure",
+      "description": "`DATABASE_PASSWORD` holds a literal credential (acme\u2026[REDACTED]).",
+      "recommendation": "Revoke and rotate the credential, remove it from source and history, and load it from a secret manager or untracked environment configuration.",
+      "location": {
+        "file": "config/settings.yaml",
+        "line": 4,
+        "snippet": "DATABASE_PASSWORD: \"acme\u2026[REDACTED]\""
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI03"
+      ]
+    },
+    {
+      "rule_id": "AITM-DATA-005",
+      "title": "Credential embedded in a system prompt",
+      "severity": "medium",
+      "category": "LLM07 System Prompt Leakage",
+      "description": "The system prompt text appears to contain a credential.",
+      "recommendation": "Assume system prompts can be extracted. Remove credentials and sensitive rules from prompts and enforce authorization outside the model.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 27,
+        "snippet": "SYSTEM_PROMPT = SystemMessage("
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI03"
+      ]
+    },
+    {
+      "rule_id": "AITM-ID-001",
+      "title": "Tool takes an object or identity reference from the model (confused deputy)",
+      "severity": "medium",
+      "category": "LLM06 Excessive Agency",
+      "description": "Tool `lookup_customer` lets the model choose `customer_id` and receives no caller identity (no InjectedToolArg/InjectedState/config). A prompt-injected model can act on other users' records with the agent's privileges (IDOR / confused deputy).",
+      "recommendation": "Inject the caller's identity into the tool (InjectedToolArg, InjectedState, or the RunnableConfig) and authorize every object access against it; never trust IDs chosen by the model.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 40,
+        "snippet": "def lookup_customer(customer_id: str) -> str:"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI03",
+        "ASI02"
+      ]
+    },
+    {
+      "rule_id": "AITM-TOOL-005",
+      "title": "No human approval before side-effecting tool calls",
+      "severity": "medium",
+      "category": "LLM06 Excessive Agency",
+      "description": "Side-effecting tools (`ShellTool`, `lookup_customer`, `network_check`) run without any detected human approval step (no LangGraph interrupt, interrupt_before/after, or human-in-the-loop middleware).",
+      "recommendation": "Use LangGraph interrupts (interrupt_before / interrupt()) or human-in-the-loop middleware so a person approves destructive or external actions.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 57,
+        "snippet": "return create_react_agent(llm, tools, prompt=SYSTEM_PROMPT)"
+      },
+      "related": [
+        {
+          "file": "app/agent.py",
+          "line": 40,
+          "snippet": "def lookup_customer(customer_id: str) -> str:"
+        },
+        {
+          "file": "app/agent.py",
+          "line": 49,
+          "snippet": "def network_check(host: str) -> str:"
+        },
+        {
+          "file": "app/agent.py",
+          "line": 56,
+          "snippet": "tools = [fetch_kb_article, lookup_customer, network_check, ShellTool()]  # AITM-TOOL-001: ShellTool"
+        }
+      ],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI02",
+        "ASI09"
+      ]
+    },
+    {
+      "rule_id": "AITM-AUTH-001",
+      "title": "LLM entry point has no detected authentication",
+      "severity": "medium",
+      "category": "LLM10 Unbounded Consumption",
+      "description": "`POST /chat` exposes LLM functionality without detected authentication; anyone who can reach it can spend model quota and drive connected tools.",
+      "recommendation": "Require authentication and authorization on the endpoint, and add rate limits and usage quotas to protect model spend and connected tools.",
+      "location": {
+        "file": "app/main.py",
+        "line": 23,
+        "snippet": "def chat(body: ChatRequest) -> HTMLResponse:"
+      },
+      "related": [],
+      "confidence": "low",
+      "owasp_agentic": [
+        "ASI03"
+      ]
+    },
+    {
+      "rule_id": "AITM-DATA-003",
+      "title": "Sensitive data written to logs or debug output",
+      "severity": "medium",
+      "category": "LLM02 Sensitive Information Disclosure",
+      "description": "Personal data is written to logs via `logger.info`.",
+      "recommendation": "Disable verbose/debug modes in production and redact secrets and personal data before logging prompts, responses, or tool arguments.",
+      "location": {
+        "file": "app/main.py",
+        "line": 24,
+        "snippet": "logger.info(\"Chat from %s: %s\", body.customer_email, body.message)  # AITM-DATA-003: PII in logs"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": []
+    },
+    {
+      "rule_id": "AITM-DATA-002",
+      "title": "Secret or personal data sent to a model",
+      "severity": "medium",
+      "category": "LLM02 Sensitive Information Disclosure",
+      "description": "Personal data is sent to the model via .invoke().",
+      "recommendation": "Minimize and redact data before prompting. Confirm the provider's retention terms and keep credentials out of prompts entirely.",
+      "location": {
+        "file": "app/main.py",
+        "line": 26,
+        "snippet": "result = support_agent.invoke({\"messages\": [(\"user\", f\"Customer {body.customer_email} says: {body.message}\")]})"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": []
+    },
+    {
+      "rule_id": "AITM-PI-001",
+      "title": "Untrusted input concatenated into a prompt",
+      "severity": "medium",
+      "category": "LLM01 Prompt Injection",
+      "description": "User input is formatted directly into .invoke(); it is not delimited from instructions and braces in the input can inject template variables.",
+      "recommendation": "Pass user input as a separate template variable or human message; never splice it into instructions. Delimit untrusted text and validate its length and format.",
+      "location": {
+        "file": "app/main.py",
+        "line": 26,
+        "snippet": "result = support_agent.invoke({\"messages\": [(\"user\", f\"Customer {body.customer_email} says: {body.message}\")]})"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI01"
+      ]
+    },
+    {
+      "rule_id": "AITM-AUTH-001",
+      "title": "LLM entry point has no detected authentication",
+      "severity": "medium",
+      "category": "LLM10 Unbounded Consumption",
+      "description": "`GET /reports` exposes LLM functionality without detected authentication; anyone who can reach it can spend model quota and drive connected tools.",
+      "recommendation": "Require authentication and authorization on the endpoint, and add rate limits and usage quotas to protect model spend and connected tools.",
+      "location": {
+        "file": "app/main.py",
+        "line": 32,
+        "snippet": "def run_report(question: str) -> dict:"
+      },
+      "related": [],
+      "confidence": "low",
+      "owasp_agentic": [
+        "ASI03"
+      ]
+    },
+    {
+      "rule_id": "AITM-PI-001",
+      "title": "Untrusted input concatenated into a prompt",
+      "severity": "medium",
+      "category": "LLM01 Prompt Injection",
+      "description": "User input is formatted directly into .invoke(); it is not delimited from instructions and braces in the input can inject template variables.",
+      "recommendation": "Pass user input as a separate template variable or human message; never splice it into instructions. Delimit untrusted text and validate its length and format.",
+      "location": {
+        "file": "app/main.py",
+        "line": 33,
+        "snippet": "sql = llm.invoke(f\"Write one SQLite query that answers: {question}\").content  # AITM-PI-001"
+      },
+      "related": [],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI01"
+      ]
+    },
+    {
+      "rule_id": "AITM-DATA-003",
+      "title": "Sensitive data written to logs or debug output",
+      "severity": "low",
+      "category": "LLM02 Sensitive Information Disclosure",
+      "description": "`set_debug(True)` prints full prompts, tool arguments, and responses to stdout/logs.",
+      "recommendation": "Disable verbose/debug modes in production and redact secrets and personal data before logging prompts, responses, or tool arguments.",
+      "location": {
+        "file": "app/agent.py",
+        "line": 22,
+        "snippet": "set_debug(True)  # AITM-DATA-003: prints full prompts and tool arguments"
+      },
+      "related": [],
+      "confidence": "high",
+      "owasp_agentic": []
+    },
+    {
+      "rule_id": "AITM-DATA-004",
+      "title": "Prompts and outputs exported to a third-party tracing service",
+      "severity": "low",
+      "category": "LLM02 Sensitive Information Disclosure",
+      "description": "`LANGSMITH_TRACING=true` sends prompts, tool arguments, and model outputs to LangSmith.",
+      "recommendation": "Confirm tracing is intended for this environment, mask inputs/outputs containing personal data, and review the vendor's retention policy.",
+      "location": {
+        "file": "config/settings.yaml",
+        "line": 2,
+        "snippet": "LANGSMITH_TRACING: \"true\""
+      },
+      "related": [],
+      "confidence": "high",
+      "owasp_agentic": []
+    },
+    {
+      "rule_id": "AITM-SUP-001",
+      "title": "AI framework dependency is not pinned",
+      "severity": "low",
+      "category": "LLM03 Supply Chain",
+      "description": "Unpinned AI dependencies: langchain, langchain-community, langchain-ollama, langgraph.",
+      "recommendation": "Pin exact versions (or use a lock file with hashes) for LangChain, LangGraph, and model SDK packages, and review updates before upgrading.",
+      "location": {
+        "file": "requirements.txt",
+        "line": 2,
+        "snippet": "langchain>=0.3"
+      },
+      "related": [
+        {
+          "file": "requirements.txt",
+          "line": 3,
+          "snippet": "langchain-community"
+        },
+        {
+          "file": "requirements.txt",
+          "line": 4,
+          "snippet": "langchain-ollama"
+        },
+        {
+          "file": "requirements.txt",
+          "line": 5,
+          "snippet": "langgraph"
+        }
+      ],
+      "confidence": "medium",
+      "owasp_agentic": [
+        "ASI04"
+      ]
+    }
+  ],
+  "trust_boundaries": [
+    {
+      "id": "TB-1",
+      "name": "Users to application",
+      "source_zone": "External users",
+      "target_zone": "Application",
+      "description": "Requests, chat messages, and uploads enter the application. All content is attacker-controllable.",
+      "component_ids": [
+        "entry_point:POST /chat@app/main.py:23",
+        "entry_point:GET /reports@app/main.py:32",
+        "entry_point:LangGraph API graph 'support'@langgraph.json:4"
+      ]
+    },
+    {
+      "id": "TB-2",
+      "name": "Application to local model runtime",
+      "source_zone": "Application",
+      "target_zone": "Local model runtime",
+      "description": "Prompts stay on local infrastructure, but model responses are still untrusted output.",
+      "component_ids": [
+        "model:qwen2.5-coder:7b@app/agent.py:24"
+      ]
+    },
+    {
+      "id": "TB-3",
+      "name": "External content to model context",
+      "source_zone": "Documents, web, and data stores",
+      "target_zone": "Model context window",
+      "description": "Retrieved or fetched content is concatenated into prompts and can carry indirect prompt injection.",
+      "component_ids": [
+        "retrieval:WebBaseLoader@app/agent.py:35"
+      ]
+    },
+    {
+      "id": "TB-4",
+      "name": "Model decisions to tool execution",
+      "source_zone": "Model output",
+      "target_zone": "Tools and downstream systems",
+      "description": "The model chooses which tools run and with which arguments; tool arguments are attacker-influenced.",
+      "component_ids": [
+        "tool:fetch_kb_article@app/agent.py:33",
+        "tool:lookup_customer@app/agent.py:40",
+        "tool:network_check@app/agent.py:49",
+        "tool:ShellTool@app/agent.py:56"
+      ]
+    },
+    {
+      "id": "TB-5",
+      "name": "Application to observability vendor",
+      "source_zone": "Application",
+      "target_zone": "Tracing / logging vendor",
+      "description": "Traces include full prompts, tool arguments, and outputs.",
+      "component_ids": [
+        "observability:LangSmith tracing@config/settings.yaml:2"
+      ]
+    }
+  ],
+  "data_flows": [
+    {
+      "source_id": "entry_point:POST /chat@app/main.py:23",
+      "target_id": "agent:create_react_agent@app/agent.py:57",
+      "label": "user input",
+      "boundary_id": "TB-1"
+    },
+    {
+      "source_id": "entry_point:GET /reports@app/main.py:32",
+      "target_id": "agent:create_react_agent@app/agent.py:57",
+      "label": "user input",
+      "boundary_id": "TB-1"
+    },
+    {
+      "source_id": "entry_point:LangGraph API graph 'support'@langgraph.json:4",
+      "target_id": "agent:create_react_agent@app/agent.py:57",
+      "label": "user input",
+      "boundary_id": "TB-1"
+    },
+    {
+      "source_id": "agent:create_react_agent@app/agent.py:57",
+      "target_id": "model:qwen2.5-coder:7b@app/agent.py:24",
+      "label": "prompts and context",
+      "boundary_id": "TB-2"
+    },
+    {
+      "source_id": "agent:create_react_agent@app/agent.py:57",
+      "target_id": "tool:fetch_kb_article@app/agent.py:33",
+      "label": "tool calls (model-chosen arguments)",
+      "boundary_id": "TB-4"
+    },
+    {
+      "source_id": "agent:create_react_agent@app/agent.py:57",
+      "target_id": "tool:lookup_customer@app/agent.py:40",
+      "label": "tool calls (model-chosen arguments)",
+      "boundary_id": "TB-4"
+    },
+    {
+      "source_id": "agent:create_react_agent@app/agent.py:57",
+      "target_id": "tool:network_check@app/agent.py:49",
+      "label": "tool calls (model-chosen arguments)",
+      "boundary_id": "TB-4"
+    },
+    {
+      "source_id": "agent:create_react_agent@app/agent.py:57",
+      "target_id": "tool:ShellTool@app/agent.py:56",
+      "label": "tool calls (model-chosen arguments)",
+      "boundary_id": "TB-4"
+    },
+    {
+      "source_id": "retrieval:WebBaseLoader@app/agent.py:35",
+      "target_id": "agent:create_react_agent@app/agent.py:57",
+      "label": "retrieved content",
+      "boundary_id": "TB-3"
+    },
+    {
+      "source_id": "agent:create_react_agent@app/agent.py:57",
+      "target_id": "observability:LangSmith tracing@config/settings.yaml:2",
+      "label": "traces",
+      "boundary_id": "TB-5"
+    }
+  ],
+  "controls": [
+    {
+      "id": "CTRL-01",
+      "name": "Human approval before side-effecting actions",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI02",
+        "ASI09"
+      ],
+      "note": "Side-effecting tools (`ShellTool`, `lookup_customer`, `network_check`) run without an interrupt or approval step.",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-02",
+      "name": "Bounded agent execution (iteration / recursion limits)",
+      "status": "partial",
+      "owasp_agentic": [
+        "ASI08",
+        "ASI10"
+      ],
+      "note": "No explicit limits; relying on framework defaults (LangGraph recursion_limit=25, AgentExecutor max_iterations=15).",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-03",
+      "name": "Authenticated entry points",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI03"
+      ],
+      "note": "Some HTTP entry points have no detected authentication.",
+      "evidence": [
+        {
+          "file": "app/main.py",
+          "line": 23,
+          "snippet": "def chat(body: ChatRequest) -> HTMLResponse:"
+        },
+        {
+          "file": "app/main.py",
+          "line": 32,
+          "snippet": "def run_report(question: str) -> dict:"
+        }
+      ]
+    },
+    {
+      "id": "CTRL-04",
+      "name": "Caller identity enforced inside tools",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI03",
+        "ASI02"
+      ],
+      "note": "Tools accept model-chosen user/object identifiers without caller context.",
+      "evidence": [
+        {
+          "file": "app/agent.py",
+          "line": 40,
+          "snippet": "def lookup_customer(customer_id: str) -> str:"
+        }
+      ]
+    },
+    {
+      "id": "CTRL-05",
+      "name": "Rate limiting and usage quotas",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI08"
+      ],
+      "note": "Network entry points have no rate limiter or quota enforcement.",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-06",
+      "name": "Audit trail of agent decisions and tool calls",
+      "status": "present",
+      "owasp_agentic": [
+        "ASI09",
+        "ASI10"
+      ],
+      "note": "Tracing or callback handlers were found; make sure they record tool calls and are tamper-resistant.",
+      "evidence": [
+        {
+          "file": "config/settings.yaml",
+          "line": 2,
+          "snippet": "LANGSMITH_TRACING: \"true\""
+        }
+      ]
+    },
+    {
+      "id": "CTRL-07",
+      "name": "Prompt-injection and content guardrails",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI01"
+      ],
+      "note": "No input/output guardrail or moderation layer was found.",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-08",
+      "name": "Structured, validated model output",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI05",
+        "ASI02"
+      ],
+      "note": "Model output is consumed as free text; no schema validation (with_structured_output / output parsers) was found.",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-09",
+      "name": "Sandboxed code execution",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI05"
+      ],
+      "note": "Tools that execute code or commands (`ShellTool`, `network_check`) run in the application process.",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-10",
+      "name": "Pinned agent supply chain (packages, prompts, MCP servers)",
+      "status": "missing",
+      "owasp_agentic": [
+        "ASI04"
+      ],
+      "note": "Unpinned dependencies, prompts, or MCP servers were found.",
+      "evidence": [
+        {
+          "file": "requirements.txt",
+          "line": 2,
+          "snippet": "langchain>=0.3"
+        }
+      ]
+    },
+    {
+      "id": "CTRL-11",
+      "name": "Secured inter-agent and MCP channels",
+      "status": "not applicable",
+      "owasp_agentic": [
+        "ASI07"
+      ],
+      "note": "No matching components were detected.",
+      "evidence": []
+    },
+    {
+      "id": "CTRL-12",
+      "name": "Memory isolation and write validation",
+      "status": "not applicable",
+      "owasp_agentic": [
+        "ASI06"
+      ],
+      "note": "No matching components were detected.",
+      "evidence": []
+    }
+  ],
+  "errors": [],
+  "llm_narrative": null,
+  "llm_model": null,
+  "tool": {
+    "name": "ai-threat-model",
+    "version": "0.1.0"
+  },
+  "severity_counts": {
+    "info": 0,
+    "low": 3,
+    "medium": 9,
+    "high": 6,
+    "critical": 2
+  }
+}

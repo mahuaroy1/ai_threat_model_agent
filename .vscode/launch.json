@@ -1,0 +1,131 @@
+{
+    // Run / debug the threat-model scanner without `pip install`:
+    // every configuration puts ./src on PYTHONPATH and runs from the workspace root.
+    // Requires only the VS Code "Python" + "Python Debugger" extensions (no pip packages).
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Scan: vulnerable example",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ai_threat_model",
+            "args": [
+                "${workspaceFolder}/examples/vulnerable_support_agent",
+                "--output-dir", "${workspaceFolder}/threat-model-report",
+                "--format", "md", "json", "sarif",
+                "--log-level", "INFO"
+            ],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Scan: vulnerable example (incremental cache)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ai_threat_model",
+            "args": [
+                "${workspaceFolder}/examples/vulnerable_support_agent",
+                "--output-dir", "${workspaceFolder}/threat-model-report",
+                "--format", "md", "json", "sarif",
+                "--cache-dir", "${workspaceFolder}/.ai-threat-model-cache",
+                "--log-level", "INFO"
+            ],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Scan: vulnerable example + Ollama narrative",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ai_threat_model",
+            "args": [
+                "${workspaceFolder}/examples/vulnerable_support_agent",
+                "--output-dir", "${workspaceFolder}/threat-model-report",
+                "--format", "md", "json", "sarif",
+                "--llm",
+                "--ollama-model", "${input:ollamaModel}",
+                "--ollama-timeout", "600",
+                "--log-level", "INFO"
+            ],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Scan: choose folder...",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "ai_threat_model",
+            "args": [
+                "${input:targetPath}",
+                "--output-dir", "${workspaceFolder}/threat-model-report",
+                "--format", "md", "json", "sarif",
+                "--fail-on", "${input:failOn}",
+                "--log-level", "INFO"
+            ],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Demo: run_demo.py (scan + Ollama Qwen)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/examples/run_demo.py",
+            "args": ["--model", "${input:ollamaModel}"],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Tests: all",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "args": ["discover", "-s", "tests", "-t", ".", "-v"],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Tests: current file",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "args": ["-v", "tests.${fileBasenameNoExtension}"],
+            "cwd": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.vscode/.env",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
+    ],
+    "inputs": [
+        {
+            "id": "targetPath",
+            "type": "promptString",
+            "description": "Folder of the LangChain/LangGraph app to scan",
+            "default": "${workspaceFolder}/examples/vulnerable_support_agent"
+        },
+        {
+            "id": "failOn",
+            "type": "pickString",
+            "description": "Exit with code 1 when a finding at or above this severity exists",
+            "options": ["none", "low", "medium", "high", "critical"],
+            "default": "none"
+        },
+        {
+            "id": "ollamaModel",
+            "type": "promptString",
+            "description": "Ollama model (must already be pulled)",
+            "default": "qwen2.5-coder:7b"
+        }
+    ]
+}
